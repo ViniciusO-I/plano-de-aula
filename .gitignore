@@ -1,0 +1,166 @@
+# ------------------------------
+# Monorepo base ignores
+# ------------------------------
+
+# Logs
+*.log
+logs/
+
+# OS / system
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+thumbs.db
+Desktop.ini
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# ------------------------------
+# IDEs and editors
+# ------------------------------
+
+# IntelliJ IDEA
+.idea/
+*.iml
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+# Eclipse / STS
+.classpath
+.project
+.settings/
+.factorypath
+.apt_generated
+.springBeans
+.sts4-cache/
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# VS Code
+.vscode/
+
+# ------------------------------
+# Java / Maven / Gradle / Spring
+# ------------------------------
+
+# Maven
+**/target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+
+# Gradle
+**/build/
+.gradle/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Spring Boot
+**/logs/
+**/application-*.log
+
+# Kotlin
+.kotlin/
+
+# ------------------------------
+# Node / Angular
+# ------------------------------
+
+node_modules/
+**/node_modules/
+
+# Angular / Node build outputs
+**/dist/
+**/out/
+**/build/
+**/.angular/
+**/.cache/
+**/.parcel-cache/
+**/.next/
+**/.nuxt/
+**/.svelte-kit/
+
+# npm / yarn / pnpm
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+
+# TypeScript
+*.tsbuildinfo
+
+# ------------------------------
+# iOS / Xcode
+# ------------------------------
+
+# Xcode
+*.xcuserstate
+*.xcuserdata/
+*.xccheckout
+*.xcscmblueprint
+*.xcworkspace/xcuserdata
+DerivedData/
+
+# Swift Package Manager
+.build/
+
+# CocoaPods
+Pods/
+
+# Carthage
+Carthage/Build/
+
+# fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/
+fastlane/test_output/
+
+# ------------------------------
+# Misc
+# ------------------------------
+
+# Coverage
+coverage/
+*.lcov
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*.swn
+*.bak
+*.orig
+
+# JVM crash logs
+hs_err_pid*
+replay_pid*
+
