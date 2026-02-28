@@ -1,6 +1,8 @@
 package com.challenge.library.repositories;
 
 import com.challenge.library.entities.Book;
+import com.challenge.library.entities.BookStatusEnum;
+
 import java.util.*;
 
 public class BookRepository {
@@ -40,7 +42,18 @@ public class BookRepository {
     }
 
     // READ - Find books by status
-    // TODO: Implement findByStatus(BookStatusEnum status) method
+
+    public List<Book> findByStatus(BookStatusEnum status) {
+        List<Book> filteredBooks = new ArrayList<>();
+        for (Book book : database.values()) {
+            if (book.getStatus().equals(status)) {
+                filteredBooks.add(book);
+            }
+        }
+
+        return filteredBooks;
+    }
+
 
     // UPDATE - Update an existing book
     public Book update(Integer id, Book book) {
