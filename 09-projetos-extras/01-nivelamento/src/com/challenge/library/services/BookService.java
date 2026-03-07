@@ -17,7 +17,6 @@ public class BookService {
     }
 
     public Book makeReservation(Book book) {
-        //TODO  escrever logica  se livro disponiveis
         boolean isvalid = false;
         List<Book> filteredBooks = this.listByStatus(BookStatusEnum.AVAILABLE);
         for (Book b : filteredBooks) {
@@ -34,7 +33,9 @@ public class BookService {
     }
 
     public boolean returnBook(Book book) {
-        return repository.delete(book.getId());
+        book.setStatus(BookStatusEnum.AVAILABLE);
+        return true;
+
 
     }
 
