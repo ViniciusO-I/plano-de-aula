@@ -1,13 +1,10 @@
 package br.com.fiap.skill_hub.service;
 
-import br.com.fiap.skill_hub.controller.dto.LoginDto;
 import br.com.fiap.skill_hub.controller.dto.UserDto;
 import br.com.fiap.skill_hub.mapper.UserMapper;
 import br.com.fiap.skill_hub.repository.UserRepository;
 import br.com.fiap.skill_hub.repository.entities.UserEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 @Service
@@ -29,8 +26,12 @@ public class UserService {
         UserEntity saveEntity = userRepository.save(userEntity);
 
         // 3 passo transformar  em dto para a controller
-        UserDto userDtoResponse = userMapper.toDto(saveEntity);
-        return userDtoResponse;
+        return userMapper.toDto(saveEntity);
+    }
+
+    public List<UserDto> list() {
+        List<UserEntity> usersList = userRepository.findAll();
+        return userMapper.toListDto(usersList);
     }
 
 
@@ -47,11 +48,7 @@ public class UserService {
 //
 //    }
 
-    public List<UserDto> list() {
-        List<UserEntity> usersList = userRepository.findAll();
-        return userMapper.toListDto(usersList);
 
-    }
 
     //TODO TRANSFORMAR DTO EM ENTITY
 }

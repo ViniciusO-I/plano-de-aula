@@ -1,17 +1,17 @@
 package br.com.fiap.skill_hub.controller;
 
-import br.com.fiap.skill_hub.controller.dto.LoginDto;
+import br.com.fiap.skill_hub.api.UserApi;
 import br.com.fiap.skill_hub.controller.dto.UserDto;
 import br.com.fiap.skill_hub.service.UserService;
-import jakarta.websocket.server.PathParam;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-@Controller
+
+@RestController
 @RequestMapping("/api/users")
-public class UserController {
+public class UserController implements UserApi {
 
 
     private final UserService userService;
@@ -20,13 +20,13 @@ public class UserController {
         this.userService = userService;
     }
 
-    @PostMapping
-    public ResponseEntity<UserDto> create(@RequestBody UserDto userDto) {
+    @Override
+    public ResponseEntity<UserDto> create(UserDto userDto) {
         UserDto userDtoResponse = userService.create(userDto);
         return ResponseEntity.ok().body(userDtoResponse);
     }
 
-    @GetMapping
+    @Override
     public ResponseEntity<List<UserDto>> list() {
         List<UserDto> allUsers = userService.list();
         return ResponseEntity.ok().body(allUsers);

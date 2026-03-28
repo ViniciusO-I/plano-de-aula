@@ -8,9 +8,9 @@
 ---
 
 ## 🔹 Fase 1 — Fundação
-- [ ] Adicionar Swagger
-- [ ] Configurar MapStruct
-- [ ] Configurar Flyway
+- [x] Adicionar Swagger
+- [x] Configurar MapStruct
+- [x] Configurar Flyway
 
 ---
 
