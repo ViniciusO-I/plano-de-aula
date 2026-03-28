@@ -26,17 +26,38 @@ public class UserController {
         return ResponseEntity.ok().body(userDtoResponse);
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<UserDto> login(@RequestBody LoginDto loginDto) {
-        UserDto userDtoResponse = userService.login(loginDto);
-        return ResponseEntity.ok().body(userDtoResponse);
+    @GetMapping
+    public ResponseEntity<List<UserDto>> list() {
+        List<UserDto> allUsers = userService.list();
+        return ResponseEntity.ok().body(allUsers);
     }
+//
+//    @GetMapping(value="/{idUser}", consumes = "application/json")
+//    public ResponseEntity<UserDto> findById(@PathVariable Integer idUser) {
+//        UserDto userDtoResponse = userService.findById(idUser);
+//        return ResponseEntity.ok().body(userDtoResponse);
+//    }
 
-    @PutMapping(value="/{idUser}/skills", consumes = "application/json")
-    public ResponseEntity<UserDto> addSkill(@PathVariable Integer idUser, @RequestBody List<Integer> idSkills) {
-        UserDto userDtoResponse = userService.addSkill(idUser, idSkills);
-        return ResponseEntity.ok().body(userDtoResponse);
+//    @DeleteMapping(value="/{idUser}", consumes = "application/json")
+//    public ResponseEntity<Void> deleteById(@PathVariable Integer idUser) {
+//        userService.deleteById(idUser);
+//        return ResponseEntity.noContent().build();
+//    }
+//
+//    @PutMapping(value="/{idUser}", consumes = "application/json")
+//    public ResponseEntity<Void> update(@PathVariable Integer idUser, @RequestBody UserDto userDto) {
+//        userDto.setId(idUser);
+//        userService.update(userDto);
+//        return  ResponseEntity.noContent().build();
+//
+//    }
 
-    }
+//
+//    @PutMapping(value="/{idUser}/skills", consumes = "application/json")
+//    public ResponseEntity<UserDto> addSkill(@PathVariable Integer idUser, @RequestBody List<Integer> idSkills) {
+//        UserDto userDtoResponse = userService.addSkill(idUser, idSkills);
+//        return ResponseEntity.ok().body(userDtoResponse);
+//
+//    }
 
 }

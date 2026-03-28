@@ -12,7 +12,7 @@ public class UserDto {
     private String name;
     private String email;
     private String password;
-    private ProfileDto profile;
+    private ProfileEnum profile;
 
     public UserDto(UserEntity user){
         BeanUtils.copyProperties(user,this);
