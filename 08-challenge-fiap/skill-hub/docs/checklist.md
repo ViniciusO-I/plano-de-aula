@@ -15,8 +15,8 @@
 ---
 
 ## 🔹 Fase 2 — Modelagem e Validação
-- [ ] Modelar entidades
-- [ ] Criar DTOs
+- [x] Modelar entidades
+- [x] Criar DTOs
 - [ ] Implementar validações (DTO / formulário)
 - [ ] Implementar tratativa de erros (Exception Handler)
 
@@ -29,8 +29,8 @@
 ---
 
 ## 🔹 Fase 4 — Core da Aplicação
-- [ ] Implementar Services
-- [ ] Implementar Controllers
+- [x] Implementar Services
+- [x] Implementar Controllers
 
 ---
 
@@ -40,5 +40,5 @@
 ---
 
 ## 🔹 Fase 6 — Documentação
-- [ ] Documentação técnica
-- [ ] Documentação funcional
+- [x] Documentação técnica
+- [x] Documentação funcional
