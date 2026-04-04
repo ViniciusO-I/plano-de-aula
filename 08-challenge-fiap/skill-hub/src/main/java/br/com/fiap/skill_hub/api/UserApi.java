@@ -7,9 +7,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
@@ -44,7 +47,7 @@ public interface UserApi {
         )
     })
     ResponseEntity<UserDto> create(
-        @RequestBody UserDto userDto
+        @RequestBody @Valid UserDto userDto
     );
 
     @GetMapping
@@ -67,5 +70,26 @@ public interface UserApi {
         )
     })
     ResponseEntity<List<UserDto>> list();
+
+    @PutMapping("/{idUser}/skills")
+    @Operation(
+        summary = "Associar skills ao usuário",
+        description = "Substitui a lista de skills do usuário com os IDs enviados"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Skills associadas com sucesso"),
+        @ApiResponse(responseCode = "404", description = "Usuário ou skill não encontrada")
+    })
+    ResponseEntity<UserDto> addSkills(
+        @PathVariable Integer idUser,
+        @RequestBody @Valid List<Integer> skillIds
+    );
+
+    @GetMapping("/{idUser}/skills")
+    @Operation(
+        summary = "Listar skills do usuário",
+        description = "Retorna os IDs das skills associadas ao usuário"
+    )
+    ResponseEntity<List<Integer>> listUserSkills(@PathVariable Integer idUser);
 }
 

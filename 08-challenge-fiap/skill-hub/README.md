@@ -12,11 +12,13 @@
 
 - [Sobre o Projeto](#-sobre-o-projeto)
 - [Pré-requisitos](#-pré-requisitos)
+- [Variáveis de Ambiente](#-variáveis-de-ambiente)
 - [Build da Aplicação](#-build-da-aplicação)
 - [Migrações com Flyway](#-migrações-com-flyway)
 - [Executar com Profile Dev](#-executar-com-profile-dev)
 - [Health Check](#-health-check)
 - [Swagger - Documentação da API](#-swagger---documentação-da-api)
+- [Autenticação JWT](#-autenticação-jwt)
 - [Documentação Técnica](#-documentação-técnica)
 - [Configuração de Profiles](#-configuração-de-profiles)
 
@@ -27,11 +29,16 @@
 **Skill Hub** é uma aplicação Spring Boot desenvolvida para o desafio Oracle do programa FIAP 2TDS.
 
 **Funcionalidades:**
-- ✅ Gerenciar usuários com diferentes perfis (STUDENT, ADMINISTRATOR)
-- ✅ Mapeamento de usuários para habilidades específicas
-- ✅ Criação de grupos baseado em skills compartilhadas
+- ✅ Gerenciar usuários com perfis `STUDENT` e `ADMINISTRATOR`
+- ✅ Catálogo de habilidades (skills) com CRUD completo
+- ✅ Associar skills a usuários
+- ✅ Criação e gerenciamento de grupos com skills obrigatórias
+- ✅ Entrada em grupos com validação de skills mínimas e controle de vagas
+- ✅ Autenticação com JWT (access token + refresh token com rotação)
+- ✅ Tratamento global de exceções com códigos de erro padronizados
+- ✅ Rastreabilidade por requisição via `X-Trace-Id` (MDC)
 - ✅ API RESTful documentada com Swagger/OpenAPI
-- ✅ Múltiplos ambientes (Dev, Prod, UAT, Test)
+- ✅ Múltiplos ambientes (Dev, Prod, UAT)
 
 ---
 
@@ -51,6 +58,28 @@ git --version
 
 ---
 
+## 🔑 Variáveis de Ambiente
+
+| Variável | Obrigatória | Padrão | Descrição |
+|----------|-------------|--------|-----------|
+| `JWT_SECRET` | ✅ Sim | — | Chave secreta para assinar os JWTs (mínimo 32 caracteres) |
+| `JWT_ACCESS_EXPIRATION_MS` | ❌ Não | `900000` (15 min) | Expiração do access token em milissegundos |
+| `JWT_REFRESH_EXPIRATION_MS` | ❌ Não | `604800000` (7 dias) | Expiração do refresh token em milissegundos |
+| `PORT` | ❌ Não | `8080` | Porta do servidor |
+| `DB_HOST` | Prod only | `localhost` | Host do MySQL (produção) |
+| `DB_PORT` | Prod only | `3306` | Porta do MySQL (produção) |
+| `DB_NAME` | Prod only | `skillhubdb` | Nome do banco de dados (produção) |
+| `DB_USER` | Prod only | — | Usuário do MySQL (produção) |
+| `DB_PASSWORD` | Prod only | — | Senha do MySQL (produção) |
+
+### Configurar para desenvolvimento
+
+```bash
+export JWT_SECRET=minha-chave-super-secreta-de-pelo-menos-32-caracteres
+```
+
+---
+
 ## 📥 Instalação
 
 ### 1. Clone o Repositório
@@ -63,12 +92,7 @@ cd skill-hub
 ### 2. Instale as Dependências
 
 ```bash
-./mvnw clean install
-```
-
-Ou no Windows:
-```cmd
-mvnw.cmd clean install
+./mvnw clean install -DskipTests
 ```
 
 ---
@@ -78,6 +102,7 @@ mvnw.cmd clean install
 ### Build Completo (Com Testes)
 
 ```bash
+export JWT_SECRET=minha-chave-super-secreta-de-pelo-menos-32-caracteres
 ./mvnw clean package
 ```
 
@@ -87,7 +112,7 @@ mvnw.cmd clean install
 ./mvnw clean package -DskipTests
 ```
 
-### Build de Desenvolvimento
+### Apenas Compilar
 
 ```bash
 ./mvnw clean compile
@@ -99,23 +124,19 @@ mvnw.cmd clean install
 
 O projeto usa Flyway para versionar e aplicar schema no startup. O Hibernate fica apenas com validação (`ddl-auto: validate`).
 
-### Script inicial
+### Scripts disponíveis
 
-- Local: `src/main/resources/db/migration/V1__create_user_entity.sql`
-- Convenção: `V<versao>__<descricao>.sql`
+| Versão | Arquivo | Descrição |
+|--------|---------|-----------|
+| V1 | `V1__create_user_entity.sql` | Tabela `user_entity` |
+| V2 | `V2__create_refresh_token_and_unique_email.sql` | Tabela `refresh_token` + constraint unique no email |
+| V3 | `V3__create_skill_group_and_relationships.sql` | Tabelas `skill_entity`, `user_skill`, `group_entity`, `group_skill_requirement`, `group_member` |
 
 ### Fluxo para novas mudanças de banco
 
 1. Crie um novo arquivo em `src/main/resources/db/migration`.
-2. Nomeie seguindo a próxima versão, por exemplo `V2__add_user_unique_email.sql`.
-3. Suba a aplicação normalmente; o Flyway executa a migração pendente automaticamente.
-
-### Comandos úteis
-
-```bash
-./mvnw clean test
-./mvnw spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=dev"
-```
+2. Nomeie seguindo a próxima versão, ex.: `V4__descricao.sql`.
+3. Suba a aplicação; o Flyway executa a migração pendente automaticamente.
 
 ---
 
@@ -124,6 +145,7 @@ O projeto usa Flyway para versionar e aplicar schema no startup. O Hibernate fic
 ### Opção 1: Maven (Recomendado)
 
 ```bash
+export JWT_SECRET=minha-chave-super-secreta-de-pelo-menos-32-caracteres
 ./mvnw spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=dev"
 ```
 
@@ -132,46 +154,26 @@ O projeto usa Flyway para versionar e aplicar schema no startup. O Hibernate fic
 **Linux/Mac:**
 ```bash
 export SPRING_PROFILES_ACTIVE=dev
+export JWT_SECRET=minha-chave-super-secreta-de-pelo-menos-32-caracteres
 ./mvnw spring-boot:run
-```
-
-**Windows (CMD):**
-```cmd
-set SPRING_PROFILES_ACTIVE=dev
-mvnw spring-boot:run
-```
-
-**Windows (PowerShell):**
-```powershell
-$env:SPRING_PROFILES_ACTIVE="dev"
-mvnw spring-boot:run
 ```
 
 ### Opção 3: JAR Executável
 
 ```bash
-# Build primeiro
-./mvnw clean package
-
-# Executar
-java -Dspring.profiles.active=dev -jar target/skill-hub-0.0.1-SNAPSHOT.jar
+./mvnw clean package -DskipTests
+java -Dspring.profiles.active=dev \
+     -DJWT_SECRET=minha-chave-super-secreta-de-pelo-menos-32-caracteres \
+     -jar target/skill-hub-0.0.1-SNAPSHOT.jar
 ```
-
-### Opção 4: IDE (IntelliJ IDEA)
-
-1. Clique em `Run` → `Edit Configurations...`
-2. Em `VM options`, adicione: `-Dspring.profiles.active=dev`
-3. Clique `OK` e execute (Shift + F10)
 
 ---
 
 ## ✅ Mensagem de Sucesso
 
-Quando a aplicação inicia com sucesso, você verá:
+Quando a aplicação inicia com sucesso:
 
 ```
-✅ Active Profile: dev
-
   .   ____          _            __ _ _
  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
 ( ( )\___| '_ | '_| '/ _` | \ \ \ \
@@ -179,14 +181,12 @@ Quando a aplicação inicia com sucesso, você verá:
   '  ____ .___ __ _\__,  / / / /
  =========_==============___/=/_/_/_/
 
-2026-03-28T14:59:59.419-03:00  INFO ... : Started SkillHubApplication
+INFO : Started SkillHubApplication
 ```
 
 ---
 
 ## ❤️ Health Check
-
-Para verificar se a aplicação está saudável:
 
 ```
 http://localhost:8080/actuator/health
@@ -207,35 +207,22 @@ http://localhost:8080/actuator/health
 }
 ```
 
-### Outros Endpoints Úteis
+### Outros Endpoints Actuator (dev)
 
 ```
 http://localhost:8080/actuator/info
 http://localhost:8080/actuator/metrics
-http://localhost:8080/actuator/health/details
 ```
 
 ---
 
 ## 📚 Swagger - Documentação da API
 
-A aplicação possui documentação automática com **Swagger/OpenAPI**.
-
-### ✨ Acessar a Interface Swagger UI
-
-Com a aplicação rodando, abra seu navegador:
+### Acessar a Interface Swagger UI
 
 ```
 http://localhost:8080/swagger-ui.html
 ```
-
-### Na Interface Swagger você pode:
-
-✅ Ver todos os endpoints disponíveis  
-✅ Ler descrição e documentação de cada operação  
-✅ Ver exemplos de requisição/resposta  
-✅ **Testar endpoints direto** (botão "Try it out")  
-✅ Baixar a especificação OpenAPI em JSON  
 
 ### Acessar JSON OpenAPI
 
@@ -243,25 +230,52 @@ http://localhost:8080/swagger-ui.html
 http://localhost:8080/v3/api-docs
 ```
 
-### Exemplos de Requisições
+### Domínios documentados
 
-#### Criar Usuário (POST)
+| Tag | Base URL | Descrição |
+|-----|----------|-----------|
+| `Auth` | `/api/login` | Login, refresh token e logout |
+| `Users` | `/api/users` | CRUD de usuários e associação de skills |
+| `Skills` | `/api/skills` | CRUD de skills |
+| `Groups` | `/api/groups` | CRUD de grupos e entrada por skill |
+
+---
+
+## 🔐 Autenticação JWT
+
+### Fluxo de autenticação
+
+```
+1. POST /api/login           → retorna accessToken + refreshToken
+2. Usar accessToken          → header "Authorization: Bearer <token>"
+3. POST /api/login/refresh   → renova o par de tokens (rotação)
+4. POST /api/login/logout    → revoga o refreshToken
+```
+
+### Criar usuário e autenticar
 
 ```bash
+# 1. Criar usuário (público)
 curl -X POST http://localhost:8080/api/users \
   -H "Content-Type: application/json" \
   -d '{
     "name": "João Silva",
     "email": "joao@example.com",
-    "password": "senha123",
+    "password": "senha123a",
     "profile": "STUDENT"
   }'
-```
 
-#### Listar Usuários (GET)
+# 2. Autenticar
+curl -X POST http://localhost:8080/api/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "joao@example.com",
+    "password": "senha123a"
+  }'
 
-```bash
-curl http://localhost:8080/api/users
+# 3. Usar token nas requisições protegidas
+curl http://localhost:8080/api/users \
+  -H "Authorization: Bearer <access_token>"
 ```
 
 ---
@@ -272,72 +286,30 @@ A pasta `docs/` contém toda a documentação técnica do projeto:
 
 ```
 docs/
-├── API_DOCUMENTATION.md              # 📄 Documentação detalhada da API
-├── CHALLENGE*.pdf                    # 📋 Especificação completa do desafio
-├── checklist.md                      # ✅ Checklist do projeto
-└── fluxodesistema.drawio.png         # 🎨 Diagrama do fluxo do sistema
-```
-
-### 📄 API_DOCUMENTATION.md
-
-Documentação completa sobre como usar a API:
-
-```bash
-cat docs/API_DOCUMENTATION.md
-```
-
-Contém:
-- Como acessar Swagger UI
-- Exemplos de requisições/respostas
-- Explicação das anotações Swagger
-- Checklist de implementação
-
-### 📋 CHALLENGE ORACLE
-
-Especificação completa do desafio FIAP Oracle com todos os requisitos:
-
-```bash
-# Abrir o PDF
-open docs/CHALLENGE\ ORACLE*.pdf    # Mac
-xdg-open docs/CHALLENGE\ ORACLE*.pdf # Linux
-```
-
-### ✅ Checklist
-
-Acompanhe o progresso do projeto:
-
-```bash
-cat docs/checklist.md
-```
-
-### 🎨 Fluxo do Sistema
-
-Visualize a arquitetura e fluxo:
-
-```bash
-# Abrir a imagem
-open docs/fluxodesistema.drawio.png
+├── API_DOCUMENTATION.md    # 📄 Documentação completa da API
+├── DOMAINS.md              # 🗂️ Descrição dos domínios da aplicação
+├── ERROR_HANDLING.md       # ❌ Guia de tratamento de erros
+├── SECURITY.md             # 🔐 Documentação de segurança JWT
+├── checklist.md            # ✅ Checklist do projeto
+└── fluxodesistema.drawio.png # 🎨 Diagrama do fluxo do sistema
 ```
 
 ---
 
 ## ⚙️ Configuração de Profiles
 
-A aplicação suporta múltiplos profiles para diferentes ambientes:
-
 ### Development (dev) ✨
 
 ```bash
+export JWT_SECRET=minha-chave-super-secreta-de-pelo-menos-32-caracteres
 ./mvnw spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=dev"
 ```
 
 **Características:**
-- 🗄️ Banco H2 em memória
-- 🛫 Migrações Flyway automáticas
-- 📝 SQL logs ativados
+- 🗄️ Banco H2 em memória (`jdbc:h2:mem:skillhubdb`)
+- 🛫 Migrações Flyway automáticas (V1, V2, V3)
 - 🎛️ Todos endpoints Actuator ativos
 - 💻 H2 Console em `/h2-console`
-- 🐛 Debug mode ativo
 
 **Arquivo:** `src/main/resources/application-dev.yml`
 
@@ -346,18 +318,22 @@ A aplicação suporta múltiplos profiles para diferentes ambientes:
 ### Production (prod) 🚀
 
 ```bash
+export JWT_SECRET=sua-chave-secreta-de-producao
+export DB_USER=seu_usuario
+export DB_PASSWORD=sua_senha
 ./mvnw spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=prod"
 ```
 
 **Características:**
-- 🗄️ MySQL Database
-- 🔒 Validação de schema
+- 🗄️ MySQL Database (`${DB_HOST}:${DB_PORT}/${DB_NAME}`)
+- 🔒 Validação de schema (`ddl-auto: validate`)
 - 🛫 Migrações Flyway no startup
 - 📵 SQL logs desativados
-- 🛡️ Actuator restrito
-- ⚡ Pool de conexões otimizado
+- 🛡️ Actuator restrito a `health` e `info`
+- ⚡ Pool de conexões HikariCP (max 20, min 5)
+- 📝 Log level: `WARN` (root), `INFO` (br.com.fiap)
 
-**Pré-requisito:** MySQL rodando localmente
+**Pré-requisito:** MySQL rodando
 ```sql
 CREATE DATABASE IF NOT EXISTS skillhubdb;
 ```
@@ -376,53 +352,119 @@ CREATE DATABASE IF NOT EXISTS skillhubdb;
 
 ---
 
-### Test (test) 🔬
-
-```bash
-./mvnw spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=test"
-```
-
-**Arquivo:** `src/main/resources/application-test.yml`
-
----
-
 ## 📁 Estrutura do Projeto
 
 ```
 skill-hub/
 ├── src/main/java/br/com/fiap/skill_hub/
-│   ├── controller/              # 🔌 REST Controllers
+│   ├── api/                         # 📄 Contratos Swagger (interfaces)
+│   │   ├── UserApi.java
+│   │   ├── SkillApi.java
+│   │   ├── GroupApi.java
+│   │   └── LoginApi.java
+│   ├── controller/                  # 🔌 REST Controllers
 │   │   ├── UserController.java
-│   │   ├── UserApi.java         # Interface com documentação Swagger
-│   │   └── dto/                 # Data Transfer Objects
-│   ├── service/                 # 💼 Lógica de Negócio
-│   │   └── UserService.java
-│   ├── repository/              # 🗄️ Acesso a Dados
+│   │   ├── SkillController.java
+│   │   ├── GroupController.java
+│   │   ├── LoginController.java
+│   │   └── dto/                     # Data Transfer Objects
+│   │       ├── UserDto.java
+│   │       ├── SkillDto.java
+│   │       ├── GroupDto.java
+│   │       ├── LoginDto.java
+│   │       ├── TokenResponseDto.java
+│   │       ├── RefreshTokenRequestDto.java
+│   │       ├── ErrorResponseDto.java
+│   │       └── ProfileEnum.java
+│   ├── service/                     # 💼 Lógica de Negócio
+│   │   ├── UserService.java
+│   │   ├── SkillService.java
+│   │   ├── GroupService.java
+│   │   ├── LoginService.java
+│   │   └── JwtService.java
+│   ├── repository/                  # 🗄️ Acesso a Dados
 │   │   ├── UserRepository.java
-│   │   └── entities/            # Entidades JPA
-│   ├── mapper/                  # 🔄 MapStruct Mappers
-│   │   └── UserMapper.java
-│   ├── config/                  # ⚙️ Configurações
-│   │   └── OpenApiConfig.java
+│   │   ├── SkillRepository.java
+│   │   ├── GroupRepository.java
+│   │   ├── RefreshTokenRepository.java
+│   │   └── entities/
+│   │       ├── UserEntity.java
+│   │       ├── SkillEntity.java
+│   │       ├── GroupEntity.java
+│   │       ├── RefreshTokenEntity.java
+│   │       ├── AuditDataEntity.java
+│   │       └── StatusEnum.java
+│   ├── mapper/                      # 🔄 MapStruct Mappers
+│   │   ├── UserMapper.java
+│   │   ├── SkillMapper.java
+│   │   └── GroupMapper.java
+│   ├── exception/                   # ❌ Hierarquia de Exceções
+│   │   ├── BusinessException.java   # Classe base (abstract)
+│   │   ├── GlobalExceptionHandler.java
+│   │   ├── auth/
+│   │   │   ├── InvalidRefreshTokenException.java
+│   │   │   ├── RefreshTokenMismatchException.java
+│   │   │   ├── RefreshTokenNotFoundException.java
+│   │   │   └── TokenHashGenerationException.java
+│   │   ├── group/
+│   │   │   ├── GroupNoAvailableSeatsException.java
+│   │   │   ├── GroupNotFoundException.java
+│   │   │   ├── GroupOwnerNotFoundException.java
+│   │   │   ├── UserAlreadyGroupMemberException.java
+│   │   │   └── UserLacksRequiredSkillsException.java
+│   │   ├── skill/
+│   │   │   ├── SkillAlreadyRegisteredException.java
+│   │   │   ├── SkillDescriptionAlreadyInUseException.java
+│   │   │   └── SkillNotFoundException.java
+│   │   └── user/
+│   │       ├── EmailAlreadyRegisteredException.java
+│   │       └── UserNotFoundException.java
+│   ├── security/                    # 🔐 Filtros de Segurança
+│   │   ├── JwtAuthenticationFilter.java
+│   │   └── TraceIdFilter.java
+│   ├── config/                      # ⚙️ Configurações
+│   │   ├── SecurityConfig.java
+│   │   ├── OpenApiConfig.java
+│   │   ├── I18nConfig.java
+│   │   └── TraceContext.java
 │   └── SkillHubApplication.java
 │
 ├── src/main/resources/
-│   ├── application.yml          # Config base
-│   ├── application-dev.yml      # Config desenvolvimento
-│   ├── application-prod.yml     # Config produção
-│   ├── application-uat.yml      # Config UAT
-│   └── application-test.yml     # Config testes
+│   ├── application.yml              # Config base + JWT + logging
+│   ├── application-dev.yml          # Config desenvolvimento (H2)
+│   ├── application-prod.yml         # Config produção (MySQL)
+│   ├── application-uat.yml          # Config UAT
+│   ├── messages.properties          # Mensagens i18n (PT-BR)
+│   ├── messages_en.properties       # Mensagens i18n (EN)
+│   └── db/migration/
+│       ├── V1__create_user_entity.sql
+│       ├── V2__create_refresh_token_and_unique_email.sql
+│       └── V3__create_skill_group_and_relationships.sql
 │
-├── docs/                        # 📖 DOCUMENTAÇÃO TÉCNICA
+├── src/test/java/
+│   └── br/com/fiap/skill_hub/
+│       ├── controller/              # Testes dos controllers
+│       ├── service/                 # Testes dos services
+│       ├── mapper/                  # Testes dos mappers
+│       ├── exception/               # Testes do GlobalExceptionHandler
+│       ├── security/                # Testes dos filtros
+│       ├── ApiErrorHandlingIntegrationTest.java
+│       └── SkillHubApplicationTests.java
+│
+├── docs/                            # 📖 Documentação técnica
 │   ├── API_DOCUMENTATION.md
-│   ├── CHALLENGE*.pdf
+│   ├── DOMAINS.md
+│   ├── ERROR_HANDLING.md
+│   ├── SECURITY.md
 │   ├── checklist.md
 │   └── fluxodesistema.drawio.png
 │
-├── pom.xml                      # Maven config
-├── README.md                    # Este arquivo
-├── mvnw                         # Maven Wrapper (Unix)
-└── mvnw.cmd                     # Maven Wrapper (Windows)
+├── pom.xml
+├── Dockerfile
+├── docker-compose.yml
+├── README.md
+├── mvnw
+└── mvnw.cmd
 ```
 
 ---
@@ -434,13 +476,41 @@ skill-hub/
 | Java | 21 | Linguagem |
 | Spring Boot | 4.0.3 | Framework |
 | Spring Data JPA | 4.0.3 | ORM |
+| Spring Security | 4.0.3 | Autenticação e autorização |
+| JJWT | 0.12.7 | Geração e validação de tokens JWT |
 | Flyway | managed by Spring Boot | Controle de versões do banco |
 | MapStruct | 1.6.3 | Mapeamento DTO ↔ Entity |
 | Lombok | Latest | Boilerplate reduction |
-| H2 Database | - | Banco em memória (dev) |
+| H2 Database | managed | Banco em memória (dev/test) |
 | MySQL | 8.0+ | Banco produção |
 | SpringDoc OpenAPI | 2.0.2 | Swagger/OpenAPI |
+| JaCoCo | 0.8.12 | Cobertura de testes |
 | Maven | 3.9+ | Build tool |
+
+---
+
+## 🧪 Testes
+
+### Executar todos os testes
+
+```bash
+export JWT_SECRET=minha-chave-super-secreta-de-pelo-menos-32-caracteres
+./mvnw clean test
+```
+
+O JaCoCo gera relatório de cobertura em `target/site/jacoco/index.html`.
+
+A verificação de cobertura (`jacoco:check`) exige **mínimo 80% de cobertura de linhas** nas classes de service, controller, mapper e filtro.
+
+---
+
+## 🐋 Docker
+
+### Executar com Docker Compose
+
+```bash
+docker-compose up --build
+```
 
 ---
 
@@ -449,26 +519,26 @@ skill-hub/
 ### Porta 8080 já está em uso
 
 ```bash
-# Encontrar processo
 lsof -i :8080
-
-# Usar outra porta
+# Usar outra porta:
 ./mvnw spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=dev --server.port=8081"
 ```
 
-### Swagger UI não aparece
+### JWT_SECRET não configurado
 
+```
+Caused by: java.lang.IllegalArgumentException: JWT_SECRET environment variable is required
+```
+**Solução:**
 ```bash
-./mvnw clean compile
-# Acesse: http://localhost:8080/swagger-ui.html
+export JWT_SECRET=minha-chave-super-secreta-de-pelo-menos-32-caracteres
 ```
 
 ### Erro de Conexão MySQL em Produção
 
 ```bash
-# Criar banco
 mysql -u root -p
-CREATE DATABASE skillhubdb;
+CREATE DATABASE IF NOT EXISTS skillhubdb;
 ```
 
 ---
@@ -483,6 +553,6 @@ Para dúvidas:
 
 ---
 
-**Última atualização:** 28 de Março de 2026
+**Última atualização:** 04 de Abril de 2026
 
 Made with ❤️ by Skill Hub Team

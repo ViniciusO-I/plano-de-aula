@@ -4,11 +4,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
-import lombok.Data;
 
 import java.util.Date;
 
-@Data
 @MappedSuperclass
 public class AuditDataEntity {
     @Id
@@ -22,5 +20,37 @@ public class AuditDataEntity {
     public AuditDataEntity() {
         this.status = StatusEnum.ACTIVE;
         this.dtCreated = new Date();
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public Date getDtCreated() {
+        return dtCreated;
+    }
+
+    public void setDtCreated(Date dtCreated) {
+        this.dtCreated = dtCreated;
+    }
+
+    public Date getDtUpdated() {
+        return dtUpdated;
+    }
+
+    public void setDtUpdated(Date dtUpdated) {
+        this.dtUpdated = dtUpdated;
+    }
+
+    public StatusEnum getStatus() {
+        return status;
+    }
+
+    public void setStatus(StatusEnum status) {
+        this.status = status;
     }
 }

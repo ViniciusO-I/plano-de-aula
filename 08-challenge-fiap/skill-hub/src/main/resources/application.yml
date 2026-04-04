@@ -28,3 +28,16 @@ management:
     web:
       exposure:
         include: "*"
+
+## Security ##
+security:
+  jwt:
+    issuer: skill-hub-api
+    secret: ${JWT_SECRET}
+    access-token-expiration-ms: ${JWT_ACCESS_EXPIRATION_MS:900000}
+    refresh-token-expiration-ms: ${JWT_REFRESH_EXPIRATION_MS:604800000}
+
+## Logging ##
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [traceId=%X{traceId:-N/A}] %logger{36} - %msg%n"
