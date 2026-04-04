@@ -1,13 +1,7 @@
 package br.com.fiap.skill_hub.controller.dto;
 
-import lombok.Data;
+import jakarta.validation.constraints.NotBlank;
 
-@Data
-public class LoginDto {
-
-
-    private String email;
-    private String password;
-
+public record LoginDto(@NotBlank String email, @NotBlank String password) {
 
 }

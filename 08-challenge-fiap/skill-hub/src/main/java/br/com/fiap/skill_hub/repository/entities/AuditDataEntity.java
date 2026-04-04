@@ -13,7 +13,7 @@ import java.util.Date;
 public class AuditDataEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
     private Date dtCreated;
     private Date dtUpdated;
     private StatusEnum status;

@@ -1,13 +1,13 @@
 package br.com.fiap.skill_hub.controller.dto;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 import java.util.List;
-@Data
-public class GroupDto {
-    private Integer id;
-    private String description;
-    private List<UserDto> users;
-    private List<SkillDto> skills;
+
+public record GroupDto(@NotBlank String name, String description, @Min(2) @Max(10) Integer maxMembers) {
+
 
 }
