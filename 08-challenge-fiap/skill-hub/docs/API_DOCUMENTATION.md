@@ -70,7 +70,7 @@ A documentação da API Skill Hub é gerada automaticamente usando **Swagger/Ope
 ### 2. Acessar a Interface Swagger UI
 
 ```
-http://localhost:8080/swagger-ui.html
+http://localhost:8080/swagger-ui/index.html
 ```
 
 ### 3. Acessar o JSON OpenAPI (máquina)
@@ -349,7 +349,7 @@ api/
 - ✅ `TraceIdFilter` injeta `traceId` por requisição via MDC e header
 - ✅ `JwtAuthenticationFilter` valida Bearer token em cada requisição
 - ✅ Dependência `springdoc-openapi-starter-webmvc-ui:2.0.2` no `pom.xml`
-- ✅ Documentação acessível em `/swagger-ui.html`
+- ✅ Documentação acessível em `/swagger-ui/index.html`
 
 ---
 

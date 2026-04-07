@@ -24,10 +24,25 @@ spring:
 springdoc:
   show-actuator: false
 management:
+  endpoint:
+    health:
+      show-details: always
   endpoints:
     web:
       exposure:
-        include: "*"
+        include: health, info
+
+info:
+  app:
+    name: skill-hub-api
+    description: API for managing skills and mentoring sessions
+  links:
+    swagger: hhttp://localhost:8080/swagger-ui/index.html
+    health: http://localhost:8080/actuator/health
+    h2-console: http://localhost:8080/h2-console
+  team:
+    name: backend-team
+    contact: backend@company.com
 
 ## Security ##
 security:

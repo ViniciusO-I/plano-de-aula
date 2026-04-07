@@ -8,7 +8,7 @@ spring:
     console:
       enabled: true
   datasource:
-    url: jdbc:h2:mem:skillhubdb
+    url: jdbc:h2:mem:skillhubdb;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     driver-class-name: org.h2.Driver
     username: sa
     password:
@@ -24,7 +24,13 @@ spring:
 springdoc:
   show-actuator: false
 management:
+  endpoint:
+    health:
+      show-details: always
   endpoints:
     web:
       exposure:
-        include: "*"
+        include: health, info
+  info:
+    env:
+      enabled: true

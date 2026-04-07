@@ -133,12 +133,6 @@ Consultas usadas:
 - `findByJtiAndRevokedFalse(...)`
 - `findAllByUserIdAndRevokedFalse(...)`
 
-### Migration
-Arquivo: `src/main/resources/db/migration/V2__create_refresh_token_and_unique_email.sql`
-
-- cria tabela `refresh_token`
-- cria unique em `user_entity.email`
-
 ## Configuracao (`application.yml`)
 Arquivo: `src/main/resources/application.yml`
 

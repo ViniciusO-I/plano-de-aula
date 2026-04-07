@@ -124,13 +124,6 @@ export JWT_SECRET=minha-chave-super-secreta-de-pelo-menos-32-caracteres
 
 O projeto usa Flyway para versionar e aplicar schema no startup. O Hibernate fica apenas com validação (`ddl-auto: validate`).
 
-### Scripts disponíveis
-
-| Versão | Arquivo | Descrição |
-|--------|---------|-----------|
-| V1 | `V1__create_user_entity.sql` | Tabela `user_entity` |
-| V2 | `V2__create_refresh_token_and_unique_email.sql` | Tabela `refresh_token` + constraint unique no email |
-| V3 | `V3__create_skill_group_and_relationships.sql` | Tabelas `skill_entity`, `user_skill`, `group_entity`, `group_skill_requirement`, `group_member` |
 
 ### Fluxo para novas mudanças de banco
 
@@ -221,7 +214,7 @@ http://localhost:8080/actuator/metrics
 ### Acessar a Interface Swagger UI
 
 ```
-http://localhost:8080/swagger-ui.html
+http://localhost:8080/swagger-ui/index.html
 ```
 
 ### Acessar JSON OpenAPI
@@ -437,9 +430,6 @@ skill-hub/
 │   ├── messages.properties          # Mensagens i18n (PT-BR)
 │   ├── messages_en.properties       # Mensagens i18n (EN)
 │   └── db/migration/
-│       ├── V1__create_user_entity.sql
-│       ├── V2__create_refresh_token_and_unique_email.sql
-│       └── V3__create_skill_group_and_relationships.sql
 │
 ├── src/test/java/
 │   └── br/com/fiap/skill_hub/
@@ -521,7 +511,7 @@ docker-compose up --build
 ```bash
 lsof -i :8080
 # Usar outra porta:
-./mvnw spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=dev --server.port=8081"
+./mvnw spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=dev --server.port=8080"
 ```
 
 ### JWT_SECRET não configurado
@@ -548,7 +538,7 @@ CREATE DATABASE IF NOT EXISTS skillhubdb;
 Para dúvidas:
 
 1. 📚 Consulte `docs/API_DOCUMENTATION.md`
-2. 🌐 Acesse Swagger em `http://localhost:8080/swagger-ui.html`
+2. 🌐 Acesse Swagger em `http://localhost:8080/swagger-ui/index.html`
 3. ❤️ Verifique Health em `http://localhost:8080/actuator/health`
 
 ---

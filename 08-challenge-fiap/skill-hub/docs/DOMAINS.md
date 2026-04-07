@@ -64,7 +64,6 @@ Responsabilidade:
 
 Estado no projeto:
 - implementado em `RefreshTokenEntity`, `RefreshTokenRepository`
-- migration: `V2__create_refresh_token_and_unique_email.sql`
 
 Campos principais:
 - `user_id`

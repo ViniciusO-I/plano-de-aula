@@ -70,7 +70,11 @@ public class UserService {
             throw new SkillNotFoundException("Uma ou mais skills não foram encontradas");
         }
 
-        user.setSkills(Set.copyOf(skills));
+        // Mantém as atuais e adiciona apenas as novas
+        Set<SkillEntity> mergedSkills = new java.util.HashSet<>(user.getSkills());
+        mergedSkills.addAll(skills);
+
+        user.setSkills(mergedSkills);
         UserEntity savedUser = userRepository.save(user);
         return sanitizePassword(userMapper.toDto(savedUser));
     }
