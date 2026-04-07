@@ -1,0 +1,427 @@
+{
+  "info": {
+    "_postman_id": "skill-hub-api-collection",
+    "name": "Skill Hub API",
+    "description": "Collection completa da API Skill Hub - FIAP Challenge\n\n**Autenticação:** Use o endpoint `POST /api/login` para obter o `accessToken`. A collection captura automaticamente o token e o salva na variável `{{accessToken}}`.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "description": "Endpoints de autenticação JWT (públicos)",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const json = pm.response.json();",
+                  "  pm.collectionVariables.set('accessToken', json.accessToken);",
+                  "  pm.collectionVariables.set('refreshToken', json.refreshToken);",
+                  "  console.log('Tokens salvos nas variáveis da collection.');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"joao.silva@example.com\",\n  \"password\": \"senha123a\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "login"]
+            },
+            "description": "Autentica o usuário e retorna `accessToken` + `refreshToken`. O script de teste salva os tokens automaticamente nas variáveis da collection."
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const json = pm.response.json();",
+                  "  pm.collectionVariables.set('accessToken', json.accessToken);",
+                  "  pm.collectionVariables.set('refreshToken', json.refreshToken);",
+                  "  console.log('Tokens renovados e salvos.');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/login/refresh",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "login", "refresh"]
+            },
+            "description": "Renova o `accessToken` e o `refreshToken` usando o refresh token atual."
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/login/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "login", "logout"]
+            },
+            "description": "Revoga o refresh token. Resposta: 204 No Content."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "description": "Endpoints de gerenciamento de usuários",
+      "item": [
+        {
+          "name": "Criar Usuário (público)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"João Silva\",\n  \"email\": \"joao.silva@example.com\",\n  \"password\": \"senha123a\",\n  \"profile\": \"STUDENT\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"]
+            },
+            "description": "Cria um novo usuário. Rota pública, não requer autenticação.\n\n**profile:** `STUDENT` ou `ADMINISTRATOR`\n**password:** mínimo 8, máximo 64 caracteres, ao menos 1 letra e 1 número."
+          }
+        },
+        {
+          "name": "Listar Usuários",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"]
+            },
+            "description": "Retorna todos os usuários cadastrados. Requer autenticação."
+          }
+        },
+        {
+          "name": "Associar Skills ao Usuário",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[1, 2, 3]"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users/1/skills",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "1", "skills"]
+            },
+            "description": "Substitui a lista de skills do usuário pelo array de IDs enviado. Altere `1` pelo ID do usuário desejado."
+          }
+        },
+        {
+          "name": "Listar Skills do Usuário",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/1/skills",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "1", "skills"]
+            },
+            "description": "Retorna os IDs das skills associadas ao usuário. Altere `1` pelo ID do usuário desejado."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Skills",
+      "description": "Endpoints de gerenciamento de skills (todos autenticados)",
+      "item": [
+        {
+          "name": "Criar Skill",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Java\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/skills",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "skills"]
+            },
+            "description": "Cria uma nova skill. `description` deve ter entre 2 e 80 caracteres."
+          }
+        },
+        {
+          "name": "Listar Skills",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/skills",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "skills"]
+            },
+            "description": "Retorna todas as skills cadastradas."
+          }
+        },
+        {
+          "name": "Buscar Skill por ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/skills/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "skills", "1"]
+            },
+            "description": "Busca uma skill pelo ID. Altere `1` pelo ID desejado."
+          }
+        },
+        {
+          "name": "Atualizar Skill",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Java Avançado\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/skills/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "skills", "1"]
+            },
+            "description": "Atualiza a descrição de uma skill. Altere `1` pelo ID desejado."
+          }
+        },
+        {
+          "name": "Excluir Skill",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/skills/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "skills", "1"]
+            },
+            "description": "Remove uma skill pelo ID. Altere `1` pelo ID desejado."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Groups",
+      "description": "Endpoints de gerenciamento de grupos de estudo (todos autenticados)",
+      "item": [
+        {
+          "name": "Criar Grupo",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Grupo de Java Avançado\",\n  \"maxMembers\": 10,\n  \"ownerId\": 1,\n  \"skills\": [\n    { \"id\": 1, \"description\": \"Java\" }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/groups",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "groups"]
+            },
+            "description": "Cria um novo grupo de estudo.\n\n- `description`: 3–120 caracteres\n- `maxMembers`: número positivo de vagas\n- `ownerId`: ID do usuário dono do grupo\n- `skills`: lista de skills exigidas (ao menos uma)"
+          }
+        },
+        {
+          "name": "Listar Grupos",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/groups",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "groups"]
+            },
+            "description": "Retorna todos os grupos cadastrados."
+          }
+        },
+        {
+          "name": "Buscar Grupo por ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/groups/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "groups", "1"]
+            },
+            "description": "Busca um grupo pelo ID. Altere `1` pelo ID desejado."
+          }
+        },
+        {
+          "name": "Atualizar Grupo",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Grupo de Java Avançado - Atualizado\",\n  \"maxMembers\": 15,\n  \"ownerId\": 1,\n  \"skills\": [\n    { \"id\": 1, \"description\": \"Java\" }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/groups/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "groups", "1"]
+            },
+            "description": "Atualiza os dados de um grupo. Altere `1` pelo ID desejado."
+          }
+        },
+        {
+          "name": "Excluir Grupo",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/groups/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "groups", "1"]
+            },
+            "description": "Remove um grupo pelo ID. Altere `1` pelo ID desejado."
+          }
+        },
+        {
+          "name": "Entrar no Grupo (Join)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/groups/1/join/2",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "groups", "1", "join", "2"]
+            },
+            "description": "Adiciona um usuário a um grupo.\n\n- `{groupId}` = ID do grupo (substitua `1`)\n- `{userId}` = ID do usuário (substitua `2`)\n\n**Regras de negócio:**\n- Usuário deve possuir todas as skills exigidas pelo grupo\n- Deve haver vagas disponíveis\n- Usuário não pode já ser membro"
+          }
+        }
+      ]
+    }
+  ]
+}
